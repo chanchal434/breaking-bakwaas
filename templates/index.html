@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breaking Bakwaas - Architect Edition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3.3" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+
+    <!-- Top Nav -->
+    <div class="top-nav">
+      <button class="menu-btn" onclick="toggleNav()">☰</button>
+      <h1 class="header-title">📰 Breaking Bakwaas</h1>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="mySidebar" class="sidebar">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+      <div class="sidebar-content">
+        <h2>⚙️ History & Downloads</h2>
+        <div class="side-actions">
+          <button onclick="downloadAllPDF()" class="btn-side">📑 Download All (PDF)</button>
+          <a href="/download/all" class="btn-side">📄 Download All (TXT)</a>
+          <a href="/clear" class="btn-side danger" onclick="return confirm('Delete ALL history permanently?');">🗑️ Clear All History</a>
+        </div>
+
+        <h2>🕒 Archive</h2>
+        {% if not history %}
+          <p style="font-size: 14px; color: #ccc">No history found.</p>
+        {% else %}
+          {% for item in history %}
+          <div class="news-card sidebar-card">
+            <div class="dropdown">
+              <button class="dropbtn" onclick="toggleDropdown('drop-{{ item.id }}')">⋮</button>
+              <div id="drop-{{ item.id }}" class="dropdown-content">
+                <button onclick="downloadPDF('print-{{ item.id }}', '{{ item.headline[:15]|urlencode }}')">📑 Download PDF</button>
+                <a href="/download/txt/{{ item.id }}">📄 Download TXT</a>
+                <button onclick="shareToWhatsApp('{{ item.id }}', '{{ item.headline|urlencode }}')">📱 WhatsApp</button>
+                <button onclick="shareToX('{{ item.id }}', '{{ item.headline|urlencode }}')">𝕏 Share on X</button>
+                <button onclick="copyLink('{{ item.id }}')">🔗 Copy Link</button>
+                <a href="/delete/{{ item.id }}" class="text-danger">🗑️ Delete</a>
+              </div>
+            </div>
+
+            <!-- REAL AI IMAGE -->
+            {% if item.image_prompt %}
+            <div class="photo-evidence">
+              <strong>📸 Photographic Evidence</strong>
+              <img src="https://image.pollinations.ai/prompt/{{ item.image_prompt|urlencode }}?width=600&height=400&seed=42" 
+                   alt="AI Photo" style="width:100%; border-radius:8px; margin-top:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+              <small style="display:block; margin-top:4px; color:#666;">{{ item.image_prompt }}</small>
+            </div>
+            {% endif %}
+
+            <div style="font-size: 11px; color: #a8dadc; margin-bottom: 5px">{{ item.date }}</div>
+            <details class="sidebar-details">
+              <summary class="sidebar-summary">{{ item.headline }}</summary>
+              <div class="sidebar-full-content">{{ item.content }}</div>
+            </details>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="tabs">
+        <button class="tab-btn {% if active_tab == 'custom' %}active{% endif %}" onclick="switchTab('custom')">✏️ Custom Input</button>
+        <button class="tab-btn {% if active_tab == 'auto' %}active{% endif %}" onclick="switchTab('auto')">🎲 Auto Generate</button>
+      </div>
+
+      <!-- CUSTOM FORM -->
+      <div id="custom-form" class="form-section {% if active_tab == 'custom' %}active{% endif %}">
+        <form method="POST" id="customNewsForm">
+          <input type="hidden" name="mode" value="custom" />
+          <div class="input-group"><input type="text" name="place" placeholder="Place (e.g., Pune, Mars)" required></div>
+          <div class="input-group"><input type="text" name="person" placeholder="Person Name" required></div>
+          <div class="input-group">
+            <select name="news_type">
+              <option>Funny</option>
+              <option>Politics</option>
+              <option>Sports</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <select name="tone">
+              <option>Sarcastic</option>
+              <option>Dramatic</option>
+            </select>
+          </div>
+          <button type="submit" class="action-btn" id="customBtn">🚀 Publish News</button>
+        </form>
+      </div>
+
+      <!-- AUTO FORM -->
+      <div id="auto-form" class="form-section {% if active_tab == 'auto' %}active{% endif %}">
+        <form method="POST" id="autoNewsForm">
+          <input type="hidden" name="mode" value="auto" />
+          <p style="text-align: center;">Let AI surprise you with random Indian pop culture & crazy locations!</p>
+          <button type="submit" class="action-btn" id="autoBtn">🎲 Surprise Me With AI!</button>
+        </form>
+      </div>
+
+      {% if latest_news %}
+      <h2 style="color: var(--secondary); margin-top: 40px">✨ Hot off the press:</h2>
+      <div class="news-card" style="box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-left: 5px solid var(--primary);">
+        <div id="print-{{ latest_news.id }}" class="pdf-print-area">
+          <div style="font-size: 12px; color: #888; margin-bottom: 10px">{{ latest_news.date }}</div>
+          <h2 style="margin-top:0">{{ latest_news.headline }}</h2>
+
+          {% if latest_news.image_prompt %}
+          <div class="photo-evidence" style="margin:15px 0">
+            <strong>📸 Photographic Evidence</strong>
+            <img src="https://image.pollinations.ai/prompt/{{ latest_news.image_prompt|urlencode }}?width=600&height=400&seed=42" 
+                 alt="AI Photo" style="width:100%; border-radius:8px; margin-top:8px;">
+            <small style="display:block; margin-top:4px; color:#666;">{{ latest_news.image_prompt }}</small>
+          </div>
+          {% endif %}
+
+          <p>{{ latest_news.content }}</p>
+          <p style="font-size: 11px; color: #999; margin-top: 20px; font-style: italic;">Published by Breaking Bakwaas</p>
+        </div>
+
+        <div class="dropdown">
+          <button class="dropbtn" onclick="toggleDropdown('main-drop')">⋮</button>
+          <div id="main-drop" class="dropdown-content">
+            <button onclick="downloadPDF('print-{{ latest_news.id }}', '{{ latest_news.headline[:15]|urlencode }}')">📑 Download PDF</button>
+            <a href="/download/txt/{{ latest_news.id }}">📄 Download TXT</a>
+            <button onclick="shareToWhatsApp('{{ latest_news.id }}', '{{ latest_news.headline|urlencode }}')">📱 WhatsApp</button>
+            <button onclick="shareToX('{{ latest_news.id }}', '{{ latest_news.headline|urlencode }}')">𝕏 Share on X</button>
+            <button onclick="copyLink('{{ latest_news.id }}')">🔗 Copy Link</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Hidden All-Print (for PDF) -->
+    <div id="hidden-all-print">
+      <h1 style="text-align: center; color: #e63946; margin-bottom: 30px">📰 BREAKING BAKWAAS - Complete Archive</h1>
+      {% for item in history %}
+      <div class="pdf-print-area" id="print-{{ item.id }}">
+        <div class="pdf-header">📰 BREAKING BAKWAAS</div>
+        <div style="font-size: 12px; color: #888">{{ item.date }}</div>
+        <h2>{{ item.headline }}</h2>
+
+        {% if item.image_prompt %}
+        <div class="pdf-photo-evidence">
+          📸 Photographic Evidence<br>
+          <img src="https://image.pollinations.ai/prompt/{{ item.image_prompt|urlencode }}?width=700&height=420&seed=42" 
+               alt="AI Photo" style="width:100%; border-radius:8px; margin:12px 0;">
+          <em>{{ item.image_prompt }}</em>
+        </div>
+        {% endif %}
+
+        <p>{{ item.content }}</p>
+        <hr style="border:1px dashed #ccc; margin:20px 0">
+        <p style="text-align:center; font-size:11px; color:#999">Published by Breaking Bakwaas AI • Satire Only</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
