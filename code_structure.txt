@@ -1,0 +1,15 @@
+AV_flask_Bakwaas/
+│
+├── app.py                    # (Updated) Main Flask routing file
+├── ai_handler.py             # (Updated) Gemini AI + Image Prompt logic
+├── db_handler.py             # (Updated) JSON database handler
+├── .env                      # (Keep your existing one with GEMINI_API_KEY)
+├── history.json              # (Auto-created) Stores all generated news
+│
+├── static/                   # Static assets folder
+│   ├── style.css             # (Updated) Full styling with PDF fixes
+│   └── script.js             # (Updated) Latest PDF logic with image loading fix
+│
+└── templates/                # HTML templates folder
+    ├── index.html            # (Updated) Main page with forms + sidebar
+    └── single_news.html      # (New) Individual shareable news page
