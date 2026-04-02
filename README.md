@@ -61,3 +61,33 @@
 ---
 
 ## 📁 Project Structure
+
+breaking-bakwaas/
+├── app.py # Main Flask application entry point
+├── ai_handler.py # Wrapper for Google Gemini API calls (text & images)
+├── db_handler.py # SQLite database CRUD operations
+├── requirements.txt # Python dependencies (create if missing)
+├── .env # Environment variables (API keys) – not committed
+├── LICENSE # MIT License
+├── README.md # This file
+├── static/ # Static assets (CSS, JS, images)
+│ ├── style.css
+│ └── script.js
+├── templates/ # HTML templates
+│ ├── index.html # Homepage (input form / auto mode)
+│ ├── single_news.html # Individual article view with image & actions
+│ └── (other .html files)
+└── code_structure.txt # Legacy structure reference
+
+## 🚀 Getting Started
+
+- Python 3.8 or higher
+- A [Google Gemini API key](https://ai.google.dev/gemini-api) (free tier available)
+- (Optional) An image generation API key if not using Gemini for images – e.g., **Imagen**, **Stable Diffusion**, or **Pollinations.ai** (check `ai_handler.py` for details).
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/chanchal434/breaking-bakwaas.git
+   cd breaking-bakwaas
