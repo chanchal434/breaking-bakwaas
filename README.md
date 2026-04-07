@@ -42,7 +42,7 @@
 ├── README.md # This file
 ├── static/ # Static assets (CSS, JS, images)
 │ ├── style.css
-│ └── script.js
+│ └── script.js # all javascript which make it dynamic
 ├── templates/ # HTML templates
 │ ├── index.html # Homepage (input form / auto mode)
 │ ├── single_news.html # Individual article view with image & actions
